@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Students from "./pages/Students";
-import Sessions from "./pages/Sessions";
-import Configuration from "./pages/Configuration";
+import Login from "./Pages/Login";
+import Dashboard from "./Pages/Dashboard";
+import Students from "./Pages/Students";
+import Sessions from "./Pages/Sessions";
+import Configuration from "./Pages/Configuration";
 
 function PrivateRoutes() {
   const { isAuthenticated } = useAuth();
@@ -24,7 +24,7 @@ function PrivateRoutes() {
       <Route path="/sesiones" element={<Sessions />} />
       <Route path="/configuracion" element={<Configuration />} />
 
-      {/* Captura de error 404 corregida */}
+      {/* Captura de error 404 */}
       <Route
         path="*"
         element={
