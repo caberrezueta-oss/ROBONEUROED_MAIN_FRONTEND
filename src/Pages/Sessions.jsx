@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Calendar, Clock, Inbox, Loader2 } from "lucide-react";
+import { Search, Eye, Calendar, Clock, Timer, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { apiFetch } from "../api/client";
 
 export default function Sessions() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 8;
   const [sessionLogs, setSessionLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,6 +31,13 @@ export default function Sessions() {
     log.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
+  const paginatedLogs = filteredLogs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans antialiased">
@@ -80,7 +89,7 @@ export default function Sessions() {
           ) : filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="p-4 bg-slate-900/40 rounded-2xl mb-4">
-                <Inbox size={22} className="text-slate-600" />
+                <Timer size={22} className="text-slate-600" />
               </div>
               {sessionLogs.length === 0 ? (
                 <>
@@ -108,7 +117,7 @@ export default function Sessions() {
                   </tr>
                 </thead>
                 <tbody className="text-xs font-medium text-slate-300 divide-y divide-slate-900/30">
-                  {filteredLogs.map((log) => (
+                  {paginatedLogs.map((log) => (
                     <tr key={log.id} className="group hover:bg-slate-900/10 transition-colors">
                       <td className="py-4 pl-2 text-indigo-400 font-bold tracking-wider">{log.id}</td>
                       <td className="py-4 font-black text-white text-sm tracking-wide">{log.student}</td>
@@ -140,6 +149,30 @@ export default function Sessions() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-900/60">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                Página {currentPage} de {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-in-out cursor-pointer"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-in-out cursor-pointer"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           )}
 

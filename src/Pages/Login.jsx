@@ -32,8 +32,8 @@ function Login() {
         
         {/* LOGO / ENCABEZADO */}
         <div className="text-center mb-8">
-          <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-purple-600 size-8" />
+          <div className="bg-indigo-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="text-indigo-600 size-8" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800">RoboNeuroED</h1>
           <p className="text-gray-500 mt-2">Acceso al Sistema de Gestión TDAH</p>
@@ -58,7 +58,7 @@ function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ejemplo@neuroed.com"
-                className="w-full border border-gray-300 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-purple-500 transition-colors"
+                className="w-full border border-gray-300 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -73,7 +73,7 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-gray-300 rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-purple-500 transition-colors"
+                className="w-full border border-gray-300 rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-indigo-500 transition-colors"
               />
               <button
                 type="button"
@@ -88,7 +88,7 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-[1.01] transition-all text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-purple-200 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:scale-[1.01] transition-all text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
