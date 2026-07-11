@@ -60,42 +60,171 @@ export default function StudentDetail() {
   const handleDownloadPdf = () => {
     if (!student) return;
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
 
-    doc.setFontSize(18);
+    // Paleta (misma marca que la web: índigo + esmeralda, sin colores nuevos)
+    const INDIGO = [79, 70, 229];
+    const INDIGO_LIGHT = [238, 237, 253];
+    const EMERALD = [5, 150, 105];
+    const SLATE_900 = [15, 23, 42];
+    const SLATE_500 = [100, 116, 139];
+    const SLATE_200 = [226, 232, 240];
+
+    // ---------- ENCABEZADO ----------
+    doc.setFillColor(...SLATE_900);
+    doc.rect(0, 0, pageWidth, 26, "F");
+
     doc.setFont(undefined, "bold");
-    doc.text("RoboNeuroED — Reporte de Progreso", 14, 20);
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("ROBO", margin, 16);
+    const roboWidth = doc.getTextWidth("ROBO");
+    doc.setTextColor(...INDIGO);
+    doc.text("NEURO", margin + roboWidth, 16);
+    const neuroWidth = doc.getTextWidth("NEURO");
+    doc.setTextColor(255, 255, 255);
+    doc.text("ED", margin + roboWidth + neuroWidth, 16);
 
-    doc.setFontSize(11);
     doc.setFont(undefined, "normal");
-    doc.text(`Estudiante: ${student.name}`, 14, 32);
-    doc.text(`Condición: ${student.condition || "No especificada"}`, 14, 39);
-    doc.text(`Fecha del reporte: ${new Date().toLocaleDateString("es-EC")}`, 14, 46);
+    doc.setFontSize(8.5);
+    doc.setTextColor(203, 213, 225);
+    doc.text("Sistema de Telemetría Neuro-Robótica", margin, 21.5);
 
-    doc.setFontSize(12);
     doc.setFont(undefined, "bold");
-    doc.text("Resumen General", 14, 58);
-    doc.setFont(undefined, "normal");
     doc.setFontSize(10);
-    doc.text(`Sesiones totales: ${progress.length}`, 14, 65);
-    doc.text(`Foco atencional promedio: ${avgFocus}%`, 14, 71);
-    doc.text(`Tiempo total invertido: ${totalMinutes} minutos`, 14, 77);
-    doc.text(`Racha actual: ${student.streak || 0}  (mejor racha: ${student.bestStreak || 0})`, 14, 83);
+    doc.setTextColor(255, 255, 255);
+    const reportTitle = "REPORTE DE PROGRESO";
+    doc.text(reportTitle, pageWidth - margin - doc.getTextWidth(reportTitle), 16);
 
-    autoTable(doc, {
-      startY: 92,
-      head: [["Fecha", "Foco Atencional", "Duración"]],
-      body: progress.map((p) => [p.date, `${p.focusScore}%`, `${p.duration} min`]),
-      headStyles: { fillColor: [79, 70, 229] },
-      styles: { fontSize: 9 },
+    // ---------- CAJA DE METADATOS ----------
+    let y = 38;
+    doc.setDrawColor(...SLATE_200);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(margin, y, contentWidth, 26, 2, 2, "FD");
+
+    const metaColWidth = contentWidth / 2;
+    const drawMeta = (label, value, x, yPos) => {
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...SLATE_500);
+      doc.text(label, x, yPos);
+      doc.setFont(undefined, "bold");
+      doc.setFontSize(10.5);
+      doc.setTextColor(...SLATE_900);
+      doc.text(value, x, yPos + 5.5);
+    };
+
+    drawMeta("ESTUDIANTE", student.name, margin + 8, y + 10);
+    drawMeta("FECHA DEL REPORTE", new Date().toLocaleDateString("es-EC"), margin + metaColWidth + 4, y + 10);
+    drawMeta("CONDICIÓN", student.condition || "No especificada", margin + 8, y + 20);
+    drawMeta("ID ESTUDIANTE", `ALU-${String(student.id).padStart(3, "0")}`, margin + metaColWidth + 4, y + 20);
+
+    // ---------- RESUMEN GENERAL (tarjetas) ----------
+    y += 36;
+    doc.setFont(undefined, "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...SLATE_900);
+    doc.text("RESUMEN GENERAL", margin, y);
+    doc.setDrawColor(...SLATE_200);
+    doc.line(margin, y + 2, pageWidth - margin, y + 2);
+
+    y += 8;
+    const cardGap = 4;
+    const cardWidth = (contentWidth - cardGap * 3) / 4;
+    const cardHeight = 22;
+
+    const stats = [
+      { value: String(progress.length), label: "Sesiones\nTotales" },
+      { value: `${avgFocus}%`, label: "Foco\nPromedio" },
+      { value: `${totalMinutes} min`, label: "Tiempo\nInvertido" },
+      { value: String(student.streak || 0), label: `Racha Actual\n(mejor: ${student.bestStreak || 0})` },
+    ];
+
+    stats.forEach((stat, i) => {
+      const x = margin + i * (cardWidth + cardGap);
+      doc.setDrawColor(...SLATE_200);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y, cardWidth, cardHeight, 2, 2, "FD");
+
+      doc.setFont(undefined, "bold");
+      doc.setFontSize(15);
+      doc.setTextColor(...INDIGO);
+      doc.text(stat.value, x + cardWidth / 2, y + 10, { align: "center" });
+
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...SLATE_500);
+      const lines = stat.label.split("\n");
+      lines.forEach((line, li) => {
+        doc.text(line, x + cardWidth / 2, y + 15.5 + li * 3.2, { align: "center" });
+      });
     });
 
-    doc.setFontSize(8);
-    doc.setTextColor(120);
-    doc.text(
-      "Este reporte es generado automáticamente por RoboNeuroED con fines informativos para docentes, padres y terapeutas.",
-      14,
-      doc.internal.pageSize.height - 10
+    // ---------- HISTORIAL DE SESIONES ----------
+    y += cardHeight + 12;
+    doc.setFont(undefined, "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...SLATE_900);
+    doc.text("HISTORIAL DE SESIONES", margin, y);
+    doc.line(margin, y + 2, pageWidth - margin, y + 2);
+
+    autoTable(doc, {
+      startY: y + 6,
+      margin: { left: margin, right: margin },
+      head: [["Fecha", "Foco Atencional", "Duración", "Evaluación"]],
+      body: progress.length
+        ? progress.map((p) => [
+            p.date,
+            `${p.focusScore}%`,
+            `${p.duration} min`,
+            p.focusScore >= 85 ? "Excelente" : p.focusScore >= 70 ? "Regular" : "Bajo",
+          ])
+        : [["—", "Sin sesiones registradas todavía", "—", "—"]],
+      headStyles: { fillColor: SLATE_900, textColor: 255, fontSize: 9, fontStyle: "bold" },
+      bodyStyles: { fontSize: 9, textColor: SLATE_900 },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { cellPadding: 4 },
+    });
+
+    // ---------- NOTA LEGAL / INFORMATIVA ----------
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFillColor(241, 245, 249);
+    doc.setDrawColor(...INDIGO);
+    doc.setLineWidth(0.8);
+    doc.line(margin, finalY, margin, finalY + 18);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(margin + 1, finalY, contentWidth - 1, 18, "F");
+
+    doc.setFont(undefined, "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...SLATE_900);
+    doc.text("NOTA INFORMATIVA", margin + 5, finalY + 5.5);
+
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...SLATE_500);
+    const disclaimer = doc.splitTextToSize(
+      "Este reporte es generado automáticamente por RoboNeuroED a partir de los datos registrados por el sistema robótico y su plataforma web. Su propósito es servir de apoyo informativo a docentes, terapeutas y padres de familia en el seguimiento del progreso atencional del estudiante.",
+      contentWidth - 10
     );
+    doc.text(disclaimer, margin + 5, finalY + 10);
+
+    // ---------- PIE DE PÁGINA ----------
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...SLATE_500);
+      doc.text("RoboNeuroED — Sistema de Telemetría Neuro-Robótica", margin, doc.internal.pageSize.height - 8);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        pageWidth - margin - doc.getTextWidth(`Página ${i} de ${pageCount}`),
+        doc.internal.pageSize.height - 8
+      );
+    }
 
     doc.save(`Reporte_${student.name.replace(/\s+/g, "_")}.pdf`);
   };
